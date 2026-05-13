@@ -702,13 +702,16 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Aufgabe 6 ─────────────────────────────────────────────────────────────────
 st.markdown("#### Aufgabe 6 ⭐ – SAP SE: Rendite eines Technologietitels")
-st.markdown(
-    f"Herr M. kauft am **02.01.2023** genau **50 SAP-Aktien** zu je **€ 112,50**.  \n"
-    f"Heute (**{_today.strftime('%d.%m.%Y')}**) notiert die Aktie bei "
-    f"**€ {sap_now:,.2f}** *(aktueller Börsenkurs)*.  \n\n"
-    "Berechnen Sie: **(a)** Gesamtrendite &nbsp;·&nbsp; **(b)** Jahresrendite "
-    "&nbsp;·&nbsp; **(c)** Effektivzins &nbsp;·&nbsp; **(d)** Log-Rendite p.a."
-) if sap_now else st.warning("SAP-Kurs konnte nicht abgerufen werden – bitte manuell recherchieren.")
+if sap_now:
+    st.markdown(
+        f"Herr M. kauft am **02.01.2023** genau **50 SAP-Aktien** zu je **€ 112,50**.  \n"
+        f"Heute (**{_today.strftime('%d.%m.%Y')}**) notiert die Aktie bei "
+        f"**€ {sap_now:,.2f}** *(aktueller Börsenkurs)*.  \n\n"
+        "Berechnen Sie: **(a)** Gesamtrendite &nbsp;·&nbsp; **(b)** Jahresrendite "
+        "&nbsp;·&nbsp; **(c)** Effektivzins &nbsp;·&nbsp; **(d)** Log-Rendite p.a."
+    )
+else:
+    st.warning("SAP-Kurs konnte nicht abgerufen werden – bitte manuell recherchieren.")
 
 if sap_now:
     a6c1, a6c2 = st.columns(2)
@@ -743,14 +746,17 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Aufgabe 7 ─────────────────────────────────────────────────────────────────
 st.markdown("#### Aufgabe 7 ⭐⭐ – Deutsche Bank vs. Allianz: Wer hat besser abgeschnitten?")
-st.markdown(
-    f"Frau K. investiert am **02.01.2024** jeweils rund **€ 1.200,–** in zwei Aktien:  \n"
-    f"- **100 Deutsche Bank-Aktien** zu je **€ 12,50** → K₀ = € 1.250,–  \n"
-    f"- **5 Allianz-Aktien** zu je **€ 238,00** → K₀ = € 1.190,–  \n\n"
-    f"Aktuelle Kurse heute (**{_today.strftime('%d.%m.%Y')}**):  \n"
-    f"DBK = **€ {dbk_now:,.2f}** &nbsp;·&nbsp; ALV = **€ {alv_now:,.2f}**  \n\n"
-    "Welche Aktie hatte den höheren **Effektivzins**? Berechnen Sie für beide."
-) if (dbk_now and alv_now) else st.warning("Kurse konnten nicht abgerufen werden.")
+if dbk_now and alv_now:
+    st.markdown(
+        f"Frau K. investiert am **02.01.2024** jeweils rund **€ 1.200,–** in zwei Aktien:  \n"
+        f"- **100 Deutsche Bank-Aktien** zu je **€ 12,50** → K₀ = € 1.250,–  \n"
+        f"- **5 Allianz-Aktien** zu je **€ 238,00** → K₀ = € 1.190,–  \n\n"
+        f"Aktuelle Kurse heute (**{_today.strftime('%d.%m.%Y')}**):  \n"
+        f"DBK = **€ {dbk_now:,.2f}** &nbsp;·&nbsp; ALV = **€ {alv_now:,.2f}**  \n\n"
+        "Welche Aktie hatte den höheren **Effektivzins**? Berechnen Sie für beide."
+    )
+else:
+    st.warning("Kurse konnten nicht abgerufen werden.")
 
 if dbk_now and alv_now:
     a7c1, a7c2 = st.columns(2)
@@ -785,19 +791,22 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Aufgabe 8 ─────────────────────────────────────────────────────────────────
 st.markdown("#### Aufgabe 8 ⭐⭐⭐ – Mini-Portfolio: Gesamtrendite berechnen")
-st.markdown(
-    f"Herr X baut am **02.01.2023** ein Portfolio aus drei deutschen Aktien auf:  \n\n"
-    "| Aktie | Stück | Kaufkurs | Kaufwert |  \n"
-    "|---|---|---|---|  \n"
-    "| SAP SE | 20 | € 112,50 | € 2.250,– |  \n"
-    "| Deutsche Bank | 150 | € 10,80 | € 1.620,– |  \n"
-    "| Allianz | 10 | € 198,00 | € 1.980,– |  \n"
-    "| **Gesamt** | | | **€ 5.850,–** |  \n\n"
-    f"Aktuelle Kurse: SAP = **€ {sap_now:,.2f}** · DBK = **€ {dbk_now:,.2f}** "
-    f"· ALV = **€ {alv_now:,.2f}**  \n\n"
-    "**(A)** Wie viel ist das Portfolio heute wert?  \n"
-    "**(B)** Wie hoch sind Gesamtrendite und Effektivzins des Portfolios?"
-) if (sap_now and dbk_now and alv_now) else st.warning("Kurse konnten nicht abgerufen werden.")
+if sap_now and dbk_now and alv_now:
+    st.markdown(
+        f"Herr X baut am **02.01.2023** ein Portfolio aus drei deutschen Aktien auf:  \n\n"
+        "| Aktie | Stück | Kaufkurs | Kaufwert |  \n"
+        "|---|---|---|---|  \n"
+        "| SAP SE | 20 | € 112,50 | € 2.250,– |  \n"
+        "| Deutsche Bank | 150 | € 10,80 | € 1.620,– |  \n"
+        "| Allianz | 10 | € 198,00 | € 1.980,– |  \n"
+        "| **Gesamt** | | | **€ 5.850,–** |  \n\n"
+        f"Aktuelle Kurse: SAP = **€ {sap_now:,.2f}** · DBK = **€ {dbk_now:,.2f}** "
+        f"· ALV = **€ {alv_now:,.2f}**  \n\n"
+        "**(A)** Wie viel ist das Portfolio heute wert?  \n"
+        "**(B)** Wie hoch sind Gesamtrendite und Effektivzins des Portfolios?"
+    )
+else:
+    st.warning("Kurse konnten nicht abgerufen werden.")
 
 if sap_now and dbk_now and alv_now:
     a8c1, a8c2 = st.columns(2)
