@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import pandas as pd
 from scipy import stats
 from plotly.subplots import make_subplots
+import yfinance as yf
+from datetime import date
 
 st.set_page_config(
     page_title="Tutorium – Wirtschaftsmathematik",
@@ -653,6 +655,205 @@ with a5c2:
             "Log-Rendite liegt leicht darunter – sie unterstellt stetige Verzinsung. "
             "Bei kleinen Renditen sind alle drei nahezu gleich."
         )
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("---")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Live-Marktdaten Aufgaben
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("### Live-Marktdaten Aufgaben 📡")
+st.markdown(
+    "Die aktuellen Kurse werden **live von der Börse** abgerufen – "
+    "die Aufgaben sind daher jedes Mal aktuell."
+)
+
+@st.cache_data(ttl=300)
+def fetch_price(ticker: str):
+    try:
+        hist = yf.Ticker(ticker).history(period="5d")
+        series = hist["Close"].dropna()
+        if not series.empty:
+            return round(float(series.iloc[-1]), 2)
+    except Exception:
+        pass
+    return None
+
+sap_now = fetch_price("SAP.DE")
+dbk_now = fetch_price("DBK.DE")
+alv_now = fetch_price("ALV.DE")
+
+# Live price status bar
+lc1, lc2, lc3, lc4 = st.columns(4)
+lc1.markdown("**Letzte Kurse (XETRA)**")
+lc2.metric("SAP SE (SAP.DE)",         f"€ {sap_now:,.2f}" if sap_now else "–")
+lc3.metric("Deutsche Bank (DBK.DE)",  f"€ {dbk_now:,.2f}" if dbk_now else "–")
+lc4.metric("Allianz (ALV.DE)",        f"€ {alv_now:,.2f}" if alv_now else "–")
+st.caption("Kurse werden alle 5 Minuten aktualisiert · Quelle: Yahoo Finance")
+
+# Shared purchase dates
+_buy_2023 = date(2023, 1, 2)
+_buy_2024 = date(2024, 1, 2)
+_today    = date.today()
+T_23 = (_today - _buy_2023).days / 365.25
+T_24 = (_today - _buy_2024).days / 365.25
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Aufgabe 6 ─────────────────────────────────────────────────────────────────
+st.markdown("#### Aufgabe 6 ⭐ – SAP SE: Rendite eines Technologietitels")
+st.markdown(
+    f"Herr M. kauft am **02.01.2023** genau **50 SAP-Aktien** zu je **€ 112,50**.  \n"
+    f"Heute (**{_today.strftime('%d.%m.%Y')}**) notiert die Aktie bei "
+    f"**€ {sap_now:,.2f}** *(aktueller Börsenkurs)*.  \n\n"
+    "Berechnen Sie: **(a)** Gesamtrendite &nbsp;·&nbsp; **(b)** Jahresrendite "
+    "&nbsp;·&nbsp; **(c)** Effektivzins &nbsp;·&nbsp; **(d)** Log-Rendite p.a."
+) if sap_now else st.warning("SAP-Kurs konnte nicht abgerufen werden – bitte manuell recherchieren.")
+
+if sap_now:
+    a6c1, a6c2 = st.columns(2)
+    with a6c1:
+        with st.expander("💡 Tipp"):
+            st.markdown(
+                f"K(0) = 50 × 112,50 = **€ 5.625,–**  \n"
+                f"K(T) = 50 × {sap_now:.2f} = **€ {50*sap_now:,.2f}**  \n"
+                f"T = {T_23:.2f} Jahre  \n\n"
+                "Dann die vier Formeln aus Woche 2 anwenden."
+            )
+    with a6c2:
+        with st.expander("✅ Schritt-für-Schritt Lösung"):
+            K0_6 = 50 * 112.50
+            KT_6 = 50 * sap_now
+            r6   = (KT_6 - K0_6) / K0_6
+            pe6  = (KT_6 / K0_6) ** (1 / T_23) - 1
+            rl6  = np.log(KT_6 / K0_6)
+            st.markdown(f"K(0) = 50 × 112,50 = **{K0_6:,.2f} €**  \n"
+                        f"K(T) = 50 × {sap_now:.2f} = **{KT_6:,.2f} €**  \n"
+                        f"T = {T_23:.2f} Jahre")
+            df6 = pd.DataFrame({
+                "Kennzahl": ["r gesamt", "r̄ p.a.", "p_EFF p.a.", "r̄_log p.a."],
+                "Formel":   ["(KT−K0)/K0", "r/T",
+                             "(KT/K0)^(1/T)−1", "ln(KT/K0)/T"],
+                "Wert":     [f"{r6*100:.2f}%", f"{r6/T_23*100:.2f}%",
+                             f"{pe6*100:.2f}%", f"{rl6/T_23*100:.2f}%"],
+            })
+            st.dataframe(df6.set_index("Kennzahl"), use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Aufgabe 7 ─────────────────────────────────────────────────────────────────
+st.markdown("#### Aufgabe 7 ⭐⭐ – Deutsche Bank vs. Allianz: Wer hat besser abgeschnitten?")
+st.markdown(
+    f"Frau K. investiert am **02.01.2024** jeweils rund **€ 1.200,–** in zwei Aktien:  \n"
+    f"- **100 Deutsche Bank-Aktien** zu je **€ 12,50** → K₀ = € 1.250,–  \n"
+    f"- **5 Allianz-Aktien** zu je **€ 238,00** → K₀ = € 1.190,–  \n\n"
+    f"Aktuelle Kurse heute (**{_today.strftime('%d.%m.%Y')}**):  \n"
+    f"DBK = **€ {dbk_now:,.2f}** &nbsp;·&nbsp; ALV = **€ {alv_now:,.2f}**  \n\n"
+    "Welche Aktie hatte den höheren **Effektivzins**? Berechnen Sie für beide."
+) if (dbk_now and alv_now) else st.warning("Kurse konnten nicht abgerufen werden.")
+
+if dbk_now and alv_now:
+    a7c1, a7c2 = st.columns(2)
+    with a7c1:
+        with st.expander("💡 Tipp"):
+            st.markdown(
+                "Gleiche Formel für beide: p_EFF = (K(T)/K(0))^(1/T) − 1  \n"
+                f"T ist für beide gleich: **{T_24:.2f} Jahre**  \n"
+                "Vergleichen Sie danach die beiden Effektivzinsen."
+            )
+    with a7c2:
+        with st.expander("✅ Schritt-für-Schritt Lösung"):
+            K0_db, KT_db = 100*12.50, 100*dbk_now
+            K0_al, KT_al = 5*238.00,  5*alv_now
+            pe_db = (KT_db/K0_db)**(1/T_24) - 1
+            pe_al = (KT_al/K0_al)**(1/T_24) - 1
+            winner = "Deutsche Bank" if pe_db > pe_al else "Allianz"
+            st.markdown("**Deutsche Bank:**")
+            st.markdown(f"K(0)={K0_db:,.2f} € → K(T)={KT_db:,.2f} €  \n"
+                        f"**p_EFF = {pe_db*100:.2f}% p.a.**")
+            st.markdown("**Allianz:**")
+            st.markdown(f"K(0)={K0_al:,.2f} € → K(T)={KT_al:,.2f} €  \n"
+                        f"**p_EFF = {pe_al*100:.2f}% p.a.**")
+            if pe_db > pe_al:
+                st.success(f"**Deutsche Bank** hatte den höheren Effektivzins "
+                           f"({pe_db*100:.2f}% > {pe_al*100:.2f}% p.a.)")
+            else:
+                st.success(f"**Allianz** hatte den höheren Effektivzins "
+                           f"({pe_al*100:.2f}% > {pe_db*100:.2f}% p.a.)")
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Aufgabe 8 ─────────────────────────────────────────────────────────────────
+st.markdown("#### Aufgabe 8 ⭐⭐⭐ – Mini-Portfolio: Gesamtrendite berechnen")
+st.markdown(
+    f"Herr X baut am **02.01.2023** ein Portfolio aus drei deutschen Aktien auf:  \n\n"
+    "| Aktie | Stück | Kaufkurs | Kaufwert |  \n"
+    "|---|---|---|---|  \n"
+    "| SAP SE | 20 | € 112,50 | € 2.250,– |  \n"
+    "| Deutsche Bank | 150 | € 10,80 | € 1.620,– |  \n"
+    "| Allianz | 10 | € 198,00 | € 1.980,– |  \n"
+    "| **Gesamt** | | | **€ 5.850,–** |  \n\n"
+    f"Aktuelle Kurse: SAP = **€ {sap_now:,.2f}** · DBK = **€ {dbk_now:,.2f}** "
+    f"· ALV = **€ {alv_now:,.2f}**  \n\n"
+    "**(A)** Wie viel ist das Portfolio heute wert?  \n"
+    "**(B)** Wie hoch sind Gesamtrendite und Effektivzins des Portfolios?"
+) if (sap_now and dbk_now and alv_now) else st.warning("Kurse konnten nicht abgerufen werden.")
+
+if sap_now and dbk_now and alv_now:
+    a8c1, a8c2 = st.columns(2)
+    with a8c1:
+        with st.expander("💡 Tipp"):
+            st.markdown(
+                "Schritt 1: Berechnen Sie den heutigen Wert jeder Position  \n"
+                "(Stückzahl × aktueller Kurs)  \n\n"
+                "Schritt 2: Addieren Sie alle drei → K(T)  \n\n"
+                "Schritt 3: K(0) = 5.850 €, dann Renditeformeln anwenden.  \n"
+                f"T = {T_23:.2f} Jahre"
+            )
+    with a8c2:
+        with st.expander("✅ Schritt-für-Schritt Lösung"):
+            K0_8  = 20*112.50 + 150*10.80 + 10*198.00
+            KT_sap = 20 * sap_now
+            KT_dbk = 150 * dbk_now
+            KT_alv = 10  * alv_now
+            KT_8   = KT_sap + KT_dbk + KT_alv
+            r8  = (KT_8 - K0_8) / K0_8
+            pe8 = (KT_8 / K0_8) ** (1 / T_23) - 1
+            rl8 = np.log(KT_8 / K0_8)
+
+            st.markdown("**(A) Heutiger Portfoliowert:**")
+            df8 = pd.DataFrame({
+                "Aktie":   ["SAP (20×)", "Deutsche Bank (150×)", "Allianz (10×)", "**Portfolio**"],
+                "Kaufwert €": ["2.250,00", "1.620,00", "1.980,00", f"**{K0_8:,.2f}**"],
+                "Heute €":    [f"{KT_sap:,.2f}", f"{KT_dbk:,.2f}",
+                               f"{KT_alv:,.2f}", f"**{KT_8:,.2f}**"],
+                "Gewinn €":   [f"{KT_sap-2250:+,.2f}", f"{KT_dbk-1620:+,.2f}",
+                               f"{KT_alv-1980:+,.2f}", f"**{KT_8-K0_8:+,.2f}**"],
+            })
+            st.dataframe(df8.set_index("Aktie"), use_container_width=True)
+
+            st.markdown("**(B) Portfolio-Rendite:**")
+            col_a, col_b, col_c = st.columns(3)
+            col_a.metric("Gesamtrendite r",  f"{r8*100:.2f}%")
+            col_b.metric("Effektivzins p_EFF", f"{pe8*100:.2f}% p.a.")
+            col_c.metric("Log-Rendite p.a.", f"{rl8/T_23*100:.2f}%")
+
+            # Mini bar chart of individual contributions
+            fig8 = go.Figure(go.Bar(
+                x=["SAP", "Deutsche Bank", "Allianz"],
+                y=[KT_sap-2250, KT_dbk-1620, KT_alv-1980],
+                marker_color=["#42a5f5", "#ff9800", "#66bb6a"],
+                text=[f"{v:+,.0f} €" for v in [KT_sap-2250, KT_dbk-1620, KT_alv-1980]],
+                textposition="outside",
+            ))
+            fig8.update_layout(
+                title="Gewinn/Verlust je Position",
+                yaxis=dict(title="€", gridcolor="rgba(128,128,128,0.2)"),
+                plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#e0e0e0"), height=300,
+                margin=dict(t=40, b=30, l=60, r=20), showlegend=False,
+            )
+            st.plotly_chart(fig8, use_container_width=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
